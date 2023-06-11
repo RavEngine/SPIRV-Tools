@@ -144,6 +144,7 @@ macro(spvtools_extinst_lang_headers NAME GRAMMAR_FILE)
   list(APPEND EXTINST_CPP_DEPENDS spirv-tools-header-${NAME})
 endmacro(spvtools_extinst_lang_headers)
 
+if (NOT SPIRV_USE_PREGENERATED_HEADERS)
 spvtools_core_tables("unified1")
 spvtools_enum_string_mapping("unified1")
 spvtools_opencl_tables("unified1")
@@ -164,6 +165,7 @@ spvtools_vimsyntax("unified1" "1.0")
 add_custom_target(spirv-tools-vimsyntax DEPENDS ${VIMSYNTAX_FILE})
 set_property(TARGET spirv-tools-vimsyntax PROPERTY FOLDER "SPIRV-Tools utilities")
 
+
 # Extract the list of known generators from the SPIR-V XML registry file.
 set(GENERATOR_INC_FILE ${spirv-tools_BINARY_DIR}/generators.inc)
 set(SPIRV_XML_REGISTRY_FILE ${SPIRV_HEADER_INCLUDE_DIR}/spirv/spir-v.xml)
@@ -174,6 +176,7 @@ add_custom_command(OUTPUT ${GENERATOR_INC_FILE}
   DEPENDS ${XML_REGISTRY_PROCESSING_SCRIPT} ${SPIRV_XML_REGISTRY_FILE}
   COMMENT "Generate tables based on the SPIR-V XML registry.")
 list(APPEND OPCODE_CPP_DEPENDS ${GENERATOR_INC_FILE})
+
 
 # The following .cpp files include the above generated .inc files.
 # Add those .inc files as their dependencies.
@@ -214,6 +217,8 @@ list(APPEND PCH_DEPENDS ${ENUM_STRING_MAPPING_CPP_DEPENDS} ${OPCODE_CPP_DEPENDS}
 set_source_files_properties(
   ${CMAKE_CURRENT_SOURCE_DIR}/pch_source.cpp
   PROPERTIES OBJECT_DEPENDS "${PCH_DEPENDS}")
+
+endif()
 
 add_subdirectory(opt)
 add_subdirectory(reduce)
@@ -366,16 +371,30 @@ spvtools_pch(SPIRV_SOURCES pch_source)
 # for all ${SPIRV_TOOLS} targets.
 function(spirv_tools_default_target_options target)
   spvtools_default_compile_options(${target})
+
   target_include_directories(${target}
     PUBLIC
       $<BUILD_INTERFACE:${spirv-tools_SOURCE_DIR}/include>
       $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-    PRIVATE ${spirv-tools_BINARY_DIR}
     PRIVATE ${SPIRV_HEADER_INCLUDE_DIR}
   )
+  if(SPIRV_USE_PREGENERATED_HEADERS)
+      target_include_directories(${target}
+        PRIVATE
+            "${CMAKE_CURRENT_SOURCE_DIR}/../include/generated"
+      )
+  else()
+        target_include_directories(${target}
+        PRIVATE
+            "${spirv-tools_BINARY_DIR}"
+      )
+  endif()
+
   set_property(TARGET ${target} PROPERTY FOLDER "SPIRV-Tools libraries")
   spvtools_check_symbol_exports(${target})
-  add_dependencies(${target} spirv-tools-build-version core_tables enum_string_mapping extinst_tables)
+  if (NOT SPIRV_USE_PREGENERATED_HEADERS)
+    add_dependencies(${target} spirv-tools-build-version core_tables enum_string_mapping extinst_tables)
+  endif()
 endfunction()
 
 # Always build ${SPIRV_TOOLS}-shared. This is expected distro packages, and

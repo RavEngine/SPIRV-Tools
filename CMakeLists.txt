@@ -36,6 +36,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(SPRIV_SKIP_TESTS "Skip tests" ON)
 option(SPIRV_SKIP_EXAMPLES "Skip examples" ON)
+option(SPIRV_USE_PREGENERATED_HEADERS "Use the pregenerated headers" ON)
 option(ENABLE_RTTI "Enables RTTI" OFF)
 option(SPIRV_ALLOW_TIMERS "Allow timers via clock_gettime on supported platforms" ON)
 
@@ -251,7 +252,9 @@ if(NOT COMMAND find_host_program)
 endif()
 
 # Tests require Python3
-find_host_package(Python COMPONENTS Interpreter)
+if(NOT SPIRV_USE_PREGENERATED_HEADERS)
+    find_host_package(Python COMPONENTS Interpreter)
+endif()
 
 # Check for symbol exports on Linux.
 # At the moment, this check will fail on the OSX build machines for the Android NDK.
