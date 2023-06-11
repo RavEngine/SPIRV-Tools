@@ -34,7 +34,7 @@ if(${CMAKE_CXX_STANDARD} LESS 17)
 endif()
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-
+option(SPRIV_SKIP_TESTS "Skip tests" ON)
 option(ENABLE_RTTI "Enables RTTI" OFF)
 option(SPIRV_ALLOW_TIMERS "Allow timers via clock_gettime on supported platforms" ON)
 
@@ -250,7 +250,7 @@ if(NOT COMMAND find_host_program)
 endif()
 
 # Tests require Python3
-find_host_package(PythonInterp 3 REQUIRED)
+find_host_package(Python COMPONENTS Interpreter)
 
 # Check for symbol exports on Linux.
 # At the moment, this check will fail on the OSX build machines for the Android NDK.
