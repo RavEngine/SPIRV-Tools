@@ -35,6 +35,7 @@ endif()
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(SPRIV_SKIP_TESTS "Skip tests" ON)
+option(SPIRV_SKIP_EXAMPLES "Skip examples" ON)
 option(ENABLE_RTTI "Enables RTTI" OFF)
 option(SPIRV_ALLOW_TIMERS "Allow timers via clock_gettime on supported platforms" ON)
 
@@ -295,7 +296,7 @@ endif()
 # Defaults to OFF if the user didn't set it.
 option(SPIRV_SKIP_EXECUTABLES
   "Skip building the executable and tests along with the library"
-  ${SPIRV_SKIP_EXECUTABLES})
+  ON)
 option(SPIRV_SKIP_TESTS
   "Skip building tests along with the library" ${SPIRV_SKIP_TESTS})
 if ("${SPIRV_SKIP_EXECUTABLES}")
@@ -342,7 +343,9 @@ add_subdirectory(source)
 add_subdirectory(tools)
 
 add_subdirectory(test)
+if (SPIRV_SKIP_EXAMPLES)
 add_subdirectory(examples)
+endif()
 
 if(ENABLE_SPIRV_TOOLS_INSTALL)
   install(
